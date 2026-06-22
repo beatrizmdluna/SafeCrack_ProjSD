@@ -50,7 +50,8 @@ module safecrack_fsm (
     always_ff @(posedge clk or negedge KEY[0]) begin
         if (~KEY[0]) begin
             btn_prev <= 3'b000;
-        end else begin
+        end 
+        else begin
             btn_prev <= ~KEY[3:1]; // inverte pq é ativo em baixo
         end
     end
@@ -136,7 +137,8 @@ module safecrack_fsm (
                 //segura no estado das LEDR por 3 seg
                 if (timer_cnt < (CLK_FREQ * 3)) begin
                     next_timer_cnt = timer_cnt + 1'b1;
-                end else begin
+                end 
+                else begin
                     next_state = EDIT_D0; // reseta a FSM
                     next_d0 = 4'd0; next_d1 = 4'd0; next_d2 = 4'd0; next_d3 = 4'd0;
                 end
