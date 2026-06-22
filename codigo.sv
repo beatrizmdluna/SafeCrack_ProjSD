@@ -17,27 +17,27 @@ module safecrack_fsm (
 );
 
     // definicao da senha  
-    localparam logic [3:0] SENHA_0 = 4'd6;   //array de 4 bits em todas 
+    localparam logic [3:0] SENHA_0 = 4'd6;   
     localparam logic [3:0] SENHA_1 = 4'd7;
     localparam logic [3:0] SENHA_2 = 4'd6;
     localparam logic [3:0] SENHA_3 = 4'd7;
 
     // definicao 7 estados possiveis da FSM
     typedef enum logic [6:0] { 
-        EDIT_D0     = 7'b0000001, //edit primeiro digito HEX3
-        EDIT_D1     = 7'b0000010, //edit segundo digito HEX2
-        EDIT_D2     = 7'b0000100, //edit terceiro digito HEX1
-        EDIT_D3     = 7'b0001000, //edit quarto digito HEX0
-        VERIFICACAO = 7'b0010000, // comparando senha inserida com senha correta
-        SUCESSO     = 7'b0100000, // senha certa: LEDG
-        FAIL        = 7'b1000000  // senha errada: LEDR 
+        EDIT_D0     = 7'b0000001, 
+        EDIT_D1     = 7'b0000010, 
+        EDIT_D2     = 7'b0000100, 
+        EDIT_D3     = 7'b0001000, 
+        VERIFICACAO = 7'b0010000, 
+        SUCESSO     = 7'b0100000, 
+        FAIL        = 7'b1000000  
     } state_t; 
 
-    state_t state, next_state;  //memoria que sera guardada por esses dois registradores
+    state_t state, next_state;  
 
     // definicao variaveis da senha posta pelo usuario 
     logic [3:0] d0, d1, d2, d3;
-    logic [3:0] next_d0, next_d1, next_d2, next_d3; //armazena os proximos para mudar de estado na borda do cloock 
+    logic [3:0] next_d0, next_d1, next_d2, next_d3; 
     
     // def da constante do clk da placa e contadores de tempo 
     localparam int CLK_FREQ = 50_000_000; 
@@ -52,7 +52,10 @@ module safecrack_fsm (
             btn_prev <= 3'b000;
         end 
         else begin
-            btn_prev <= ~KEY[3:1]; // inverte pq é ativo em baixo
+            // index bit a bit 
+            btn_prev[1] <= ~KEY[1];
+            btn_prev[2] <= ~KEY[2];
+            btn_prev[3] <= ~KEY[3];
         end
     end
     
@@ -88,10 +91,11 @@ module safecrack_fsm (
         next_timer_cnt = timer_cnt;
 
         case (state)
-            EDIT_D0: begin                                                      // em tods os states de EDIT
-                if (btn_edge[2]) next_d0 = (d0 == 4'd9) ? 4'd0 : d0 + 1'b1; // incrementa nesse digito
-                if (btn_edge[3]) next_d0 = (d0 == 4'd0) ? 4'd9 : d0 - 1'b1; // decrementa nesse digito
-                if (btn_edge[1]) next_state = EDIT_D1;                      // confirma e move para o proximo estado 
+            EDIT_D0: begin                                                                     
+                next_timer_cnt = 29'd0; // zera o timer quando volta pro estado inicial 
+                if (btn_edge[2]) next_d0 = (d0 == 4'd9) ? 4'd0 : d0 + 1'b1; 
+                if (btn_edge[3]) next_d0 = (d0 == 4'd0) ? 4'd9 : d0 - 1'b1; 
+                if (btn_edge[1]) next_state = EDIT_D1;                      
             end
 
             EDIT_D1: begin
@@ -111,7 +115,7 @@ module safecrack_fsm (
                 if (btn_edge[3]) next_d3 = (d3 == 4'd0) ? 4'd9 : d3 - 1'b1;
                 if (btn_edge[1]) begin
                     next_state = VERIFICACAO; 
-                    next_timer_cnt = 29'd0; // zera o contador pra próximo estado
+                    next_timer_cnt = 29'd0; 
                 end
             end
 
@@ -123,23 +127,21 @@ module safecrack_fsm (
             end 
 
             SUCESSO: begin 
-                //segura no estado das LEDG por 5 seg
                 if (timer_cnt < (CLK_FREQ * 5)) begin
                     next_timer_cnt = timer_cnt + 1'b1;
                 end 
                 else begin
-                    next_state = EDIT_D0; // reseta a FSM
+                    next_state = EDIT_D0; 
                     next_d0 = 4'd0; next_d1 = 4'd0; next_d2 = 4'd0; next_d3 = 4'd0;
                 end
             end
 
             FAIL: begin 
-                //segura no estado das LEDR por 3 seg
                 if (timer_cnt < (CLK_FREQ * 3)) begin
                     next_timer_cnt = timer_cnt + 1'b1;
                 end 
                 else begin
-                    next_state = EDIT_D0; // reseta a FSM
+                    next_state = EDIT_D0; 
                     next_d0 = 4'd0; next_d1 = 4'd0; next_d2 = 4'd0; next_d3 = 4'd0;
                 end
             end
@@ -147,8 +149,8 @@ module safecrack_fsm (
             default: next_state = EDIT_D0; 
         endcase 
     end
-    // lógica saída
-    //  de Binário para 7 Segmentos do display da placa 
+
+    // lógica saída (função s7seg e bloco de displays mantidos idênticos)
     function automatic logic [6:0] s7seg(input logic [3:0] bin);
         case (bin)
             4'd0: return 7'b1000000;
@@ -161,36 +163,32 @@ module safecrack_fsm (
             4'd7: return 7'b1111000;
             4'd8: return 7'b0000000;
             4'd9: return 7'b0010000;
-            default: return 7'b1111111; //apagado
+            default: return 7'b1111111; 
         endcase
     endfunction
 
     always_comb begin
-        // valores das leds
         LEDG = 9'b0;
         LEDR = 18'b0;
-        if (state == SUCESSO) LEDG = 9'h1FF;    // acende leds verdes
-        if (state == FAIL)    LEDR = 18'h3FFFF; // Acende leds vermelhas
+        if (state == SUCESSO) LEDG = 9'h1FF;    
+        if (state == FAIL)    LEDR = 18'h3FFFF; 
 
-        // atualização automática dos Displays com as variáveis de senha
         HEX3 = s7seg(d0);
         HEX2 = s7seg(d1);
         HEX1 = s7seg(d2);
         HEX0 = s7seg(d3);
 
-        // atualização da variável 'contador' dependendo do estado
         case (state)
             EDIT_D0: contador = 4'd1;
             EDIT_D1: contador = 4'd2;
             EDIT_D2: contador = 4'd3;
             EDIT_D3: contador = 4'd4;
-            default: contador = 4'd0; //zera o contador se estiver verificando, falhando ou sucesso
+            default: contador = 4'd0; 
         endcase
 
-        //mostrar o valor do contador na placa
         if (contador > 4'd0)
             HEX4 = s7seg(contador);
         else
-            HEX4 = 7'b1111111; // deixa apagado quando não estiver editando
+            HEX4 = 7'b1111111; 
     end
 endmodule
