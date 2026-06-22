@@ -17,10 +17,10 @@ module safecrack_fsm (
 );
 
     // definicao da senha  
-    localparam logic [3:0] SENHA_0 = 4'd6;   
-    localparam logic [3:0] SENHA_1 = 4'd7;
-    localparam logic [3:0] SENHA_2 = 4'd6;
-    localparam logic [3:0] SENHA_3 = 4'd7;
+    localparam logic [3:0] SENHA_0 = 4'd1;   
+    localparam logic [3:0] SENHA_1 = 4'd2;
+    localparam logic [3:0] SENHA_2 = 4'd3;
+    localparam logic [3:0] SENHA_3 = 4'd4;
 
     // definicao 7 estados possiveis da FSM
     typedef enum logic [6:0] { 
