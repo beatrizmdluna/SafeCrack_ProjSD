@@ -17,10 +17,10 @@ module safecrack_fsm (
 );
 
     // definicao da senha  
-    localparam logic [3:0] SENHA_0 = 4'd1;   
-    localparam logic [3:0] SENHA_1 = 4'd2;
-    localparam logic [3:0] SENHA_2 = 4'd3;
-    localparam logic [3:0] SENHA_3 = 4'd4;
+    localparam logic [3:0] SENHA_0 = 4'd6;   
+    localparam logic [3:0] SENHA_1 = 4'd7;
+    localparam logic [3:0] SENHA_2 = 4'd6;
+    localparam logic [3:0] SENHA_3 = 4'd7;
 
     // definicao 7 estados possiveis da FSM
     typedef enum logic [6:0] { 
@@ -152,20 +152,20 @@ module safecrack_fsm (
 
     // lógica saída (função s7seg e bloco de displays mantidos idênticos)
     function automatic logic [6:0] s7seg(input logic [3:0] bin);
-        case (bin)
-            4'd0: return 7'b1000000;
-            4'd1: return 7'b1111001;
-            4'd2: return 7'b0100100;
-            4'd3: return 7'b0110000;
-            4'd4: return 7'b0111001;
-            4'd5: return 7'b0100010;
-            4'd6: return 7'b0000010;
-            4'd7: return 7'b1111000;
-            4'd8: return 7'b0000000;
-            4'd9: return 7'b0010000;
-            default: return 7'b1111111; 
-        endcase
-    endfunction
+    case (bin)
+        4'd0:    s7seg = 7'b0000001;
+        4'd1:    s7seg = 7'b1001111;
+        4'd2:    s7seg = 7'b0010010;
+        4'd3:    s7seg = 7'b0000110;
+        4'd4:    s7seg = 7'b1001100;
+        4'd5:    s7seg = 7'b0100100;
+        4'd6:    s7seg = 7'b0100000;
+        4'd7:    s7seg = 7'b0001111;
+        4'd8:    s7seg = 7'b0000000;
+        4'd9:    s7seg = 7'b0000100;
+        default: s7seg = 7'b1111110; // hifen
+    endcase
+endfunction
 
     always_comb begin
         LEDG = 9'b0;
