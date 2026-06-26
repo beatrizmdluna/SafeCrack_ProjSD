@@ -1,22 +1,4 @@
 
-
-Pular para o conteúdo
-Como usar o E-mail de Centro de Informatica - UFPE com leitores de tela
-Ativar as notificações na área de trabalho para o E-mail de Centro de Informatica - UFPE.
-   OK  Agora não(a)
-
-3 de 1.031
-(sem assunto)
-Caixa de entrada
-
-Samia Maria de Freitas Gonzaga
-Anexos
-16:58 (há 1 hora)
-para mim
-
-
- 1 anexo
-  •  Verificados pelo Gmail
 # SafeCrack FSM — README
 
 ## 1. Descrição detalhada de como os requisitos foram implementados
